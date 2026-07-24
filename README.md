@@ -1,6 +1,6 @@
 # Claude Dotfiles
 
-Versions my claude global instructions, settings, custom output styles and agents. 
+Versions my various claude files for fun and also for sharing!
 
 For project specific claude files that will be in the project repo itself under `.claude`
 
