@@ -4,7 +4,7 @@ set -euo pipefail
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLAUDE_DIR="$HOME/.claude"
 
-ITEMS=(CLAUDE.md settings.json agents output-styles statusline-command.sh)
+ITEMS=(CLAUDE.md settings.json agents output-styles statusline-command.sh skills)
 
 for item in "${ITEMS[@]}"; do
   src="$DOTFILES_DIR/$item"
