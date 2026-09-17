@@ -1,10 +1,19 @@
 {
   "permissions": {
-    "ask": [
-      "Bash(rm -rf*)",
-      "Bash(git reset --hard*)",
+    "deny": [
       "Bash(git push --force*)",
       "Bash(git push -f*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/id_rsa*)",
+      "Read(**/*.keystore)",
+      "Read(**/*.jks)",
+      "Read(**/credentials.json)"
+    ],
+    "ask": [
+      "Bash(rm -rf*)",
       "Bash(git clean -f*)",
       "Bash(git branch -D*)",
       "Bash(git checkout -- *)",
@@ -14,23 +23,18 @@
   },
   "model": "sonnet",
   "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "osascript -e 'display notification \"Claude Code needs your attention\" with title \"Claude Code\"'"
-          }
-        ]
-      }
-    ],
     "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "jq -Rs '{hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext: (\"Adopt caveman communication mode for this entire session (full intensity by default, active every response, do not revert unless user says \\\"stop caveman\\\"/\\\"normal mode\\\"), per this skill:\\n\\n\" + .)}}' ~/.claude/skills/caveman/SKILL.md"
+            "command": "jq -Rs '{hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext: (\"Adopt ADHD-friendly output shaping for this entire session (stays on until the user says \\\"stop adhd mode\\\"/\\\"normal mode\\\"), per this skill:\\n\\n\" + .)}}' ~/.claude/skills/adhd/SKILL.md"
+          },
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/mentor-day.mjs 2>/dev/null || true",
+            "timeout": 10,
+            "statusMessage": "Checking mentor day"
           }
         ]
       }
@@ -42,7 +46,7 @@
   },
   "enabledPlugins": {
     "expo@expo-plugins": false,
-    "figma@claude-plugins-official": true
+    "figma@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
     "expo-plugins": {
@@ -53,7 +57,44 @@
     }
   },
   "effortLevel": "high",
+  "modelSettings": {
+    "claude-sonnet-5": {
+      "effortLevel": "high"
+    }
+  },
   "tui": "fullscreen",
   "theme": "dark",
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "autoMode": {
+    "environment": [
+      "### Org-wide",
+      "**Organization**: Box UK (github.com/boxuk) — repo boxuk/rics-app, built for the Royal Institution of Chartered Surveyors (RICS)",
+      "**Cloud provider(s)**: None configured",
+      "**Repository visibility**: Private (boxuk/rics-app, confirmed via gh). Sibling org repos include at least one PUBLIC repo: boxuk/wp-packages — any push there is publishing",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: None configured — repo references CI secret names (AZURE_DEVOPS_PAT, AZURE_REPO_URL, GITHUB_TOKEN, GOOGLE_SERVICES_JSON, GOOGLE_SERVICE_INFO_PLIST) and sensitive-looking local paths (.maestro/.env, config/environment.prod.ts, config/featureFlags.prod.ts, config/secrets.ts, config/secrets.ts.dist, scripts/populate-secrets.js) — names only, no values seen",
+      "**Default / protected branches**: `main` is the default branch and is protected via an active ruleset (per gh) and listed as a protected branch",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: None configured",
+      "**Source control**: The trusted repo boxuk/rics-app (private) and its origin remote (github.com:boxuk/rics-app.git) only — other boxuk org repos (including the public boxuk/wp-packages) are separate trust boundaries, not automatically trusted",
+      "**Trusted internal domains**: None configured",
+      "**Trusted cloud buckets**: None configured",
+      "**Key internal services**: None configured",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: config/secrets.ts, config/secrets.ts.dist, config/environment.prod.ts, config/featureFlags.prod.ts, .maestro/.env, scripts/populate-secrets.js, and CI secrets AZURE_DEVOPS_PAT/AZURE_REPO_URL/GITHUB_TOKEN/GOOGLE_SERVICES_JSON/GOOGLE_SERVICE_INFO_PLIST — share only with audiences cleared at the [named+specifics] bar; visibility of the repo does not clear these into commits or pushes",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries `prod` or `production` as a whole word or name segment — note config/environment.prod.ts and config/featureFlags.prod.ts fall under this pattern for local file handling",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: Mobile app development (React Native / Expo) for the RICS member app, including Maestro E2E testing, accessibility auditing, and dependabot PR review",
+      "**Trusted repo**: boxuk/rics-app (private) at /Users/robertrhoades/Code/rics/rics and its origin remote (github.com:boxuk/rics-app.git) — confidential material is fine to commit here; content ported from other repos or sessions is not this repo's own work",
+      "**Org-specific CLIs**: maestro, adb, xcrun/xcodebuild/xcode-select, gh, npx/npm (routine within boxuk/rics-app)",
+      "(no \"routine under <user>/ prefix\" qualifiers found)"
+    ]
+  },
+  "_disabled_hooks_caveman": {
+    "type": "command",
+    "command": "jq -Rs '{hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext: (\"Adopt caveman communication mode for this entire session (full intensity by default, active every response, do not revert unless user says \\\"stop caveman\\\"/\\\"normal mode\\\"), per this skill:\\n\\n\" + .)}}' ~/.claude/skills/caveman/SKILL.md"
+  }
 }
