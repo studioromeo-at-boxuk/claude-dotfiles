@@ -24,11 +24,15 @@
 //     "self_caught": true,                 // did a question alone get you there? null if nothing was wrong
 //     "help_depth": 1,                      // deepest ladder rung reached: 0 none, 1 prior art,
 //                                           // 2 narrowed question, 3 talked through, 4 Claude took it
+//     "located": "self",                   // who found where the change belongs:
+//                                           // self | hinted (pointed at a start) | told
 //
 //     // event: "mode_switch"
 //     "from": "mentor", "to": "learning-aggressive", "reason": "tired" }
 //
-//   { "ts": "...", "event": "rotation", "owns": "navigation" }
+//   { "ts": "...", "event": "trace", "located": "self" }        // a location attempt, no handover
+//   { "ts": "...", "event": "nudge", "kind": "mentor", "taken": false }
+//   { "ts": "...", "event": "rotation", "owns": "spec" }
 //
 // Current rotation state also lives in ~/.claude/practice-rotation.json.
 //
@@ -71,11 +75,11 @@ for (const line of readFileSync(LOG, "utf8").split("\n")) {
 const cutoff = Date.now() - DAYS * 864e5;
 const inWindow = entries.filter((e) => Date.parse(e.ts) >= cutoff);
 const handovers = inWindow.filter((e) => e.event === "handover");
-const switches = inWindow.filter((e) => e.event === "mode_switch");
+const nudges = inWindow.filter((e) => e.event === "nudge" && e.kind === "mentor");
 
-// Nothing to summarise without handovers or style switches. Rotation events alone are state,
-// not practice, so say what is actually in the log rather than implying it is all stale.
-if (!handovers.length && !switches.length) {
+// Nothing to summarise without handovers. Traces, nudges and rotation events alone are too
+// thin to read, so say what is actually in the log rather than implying it is all stale.
+if (!handovers.length) {
   const older = entries.filter((e) => Date.parse(e.ts) < cutoff).length;
   const other = inWindow.length;
   const entryCount = (n) => `${n} ${n === 1 ? "entry" : "entries"}`;
@@ -147,6 +151,10 @@ const selfCaught = reviewed.filter((h) => h.self_caught);
 const rounds = handovers.map((h) => h.rounds).filter((r) => typeof r === "number");
 const sizes = handovers.map((h) => h.lines).filter((n) => typeof n === "number");
 const helped = handovers.filter((h) => typeof h.help_depth === "number");
+const traced = inWindow.filter(
+  (e) => (e.event === "handover" || e.event === "trace") && typeof e.located === "string",
+);
+const foundIt = traced.filter((h) => h.located === "self");
 
 // Per-bucket series for the two numbers that must be read together: how much help was
 // needed, and whether the work still took more passes to get right.
@@ -205,6 +213,18 @@ if (reviewed.length) {
   );
 }
 
+if (traced.length) {
+  const foundRate = bucketise(traced, (b) => (b.length ? pct(b.filter((h) => h.located === "self").length, b.length) : null));
+  console.log(
+    row(
+      "you found the code",
+      `${pct(foundIt.length, traced.length)}%  (${foundIt.length}/${traced.length})`,
+      sparkline(foundRate),
+      trend(foundRate, "up"),
+    ),
+  );
+}
+
 if (helped.length) {
   console.log(
     row(
@@ -224,17 +244,9 @@ if (rounds.length) {
 
 if (sizes.length) console.log(row("typical size handed over", `${median(sizes)} lines`));
 
-if (switches.length) {
-  const offMentor = switches.filter((s) => s.from === "mentor");
-  const reasons = offMentor.map((s) => s.reason).filter(Boolean);
-  console.log(
-    row(
-      "switched off mentor day",
-      plural(offMentor.length, "time"),
-      "",
-      reasons.length ? `(${reasons.join(", ")})` : "",
-    ),
-  );
+if (nudges.length) {
+  const taken = nudges.filter((n) => n.taken).length;
+  console.log(row("took the Mentor nudge", `${taken} of ${nudges.length}`));
 }
 
 // ---------- rotation ----------
@@ -316,10 +328,11 @@ console.log("");
 console.log("  what these mean");
 console.log("    you asked me to write it  times you gave a unit back to me part-way through");
 console.log("    you found your own bugs   I asked a question, you spotted it without being told");
+console.log("    you found the code        times you located where the change belongs, unaided");
 console.log("    average help needed       0 none, 1 prior art, 2 narrowed question,");
 console.log("                              3 talked through, 4 I took the unit");
 console.log("    review rounds to green    passes over your code before the tests went green");
-console.log("    switched off mentor day   times you moved off Mentor on a scheduled day");
+console.log("    took the Mentor nudge     times I suggested a Mentor session and you took it");
 console.log("    you have taken back       the default you own this quarter, and for how long");
 console.log("");
 console.log("  Watch 'you found your own bugs' first - it is the slowest to fake.");

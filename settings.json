@@ -32,9 +32,9 @@
           },
           {
             "type": "command",
-            "command": "node ~/.claude/hooks/mentor-day.mjs 2>/dev/null || true",
+            "command": "node ~/.claude/hooks/practice-nudge.mjs 2>/dev/null || true",
             "timeout": 10,
-            "statusMessage": "Checking mentor day"
+            "statusMessage": "Checking practice nudges"
           }
         ]
       }
